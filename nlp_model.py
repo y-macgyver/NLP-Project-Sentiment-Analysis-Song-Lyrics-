@@ -33,7 +33,7 @@ stop_words = set(stopwords.words('english'))
 # =========================================
 @st.cache_data
 def load_data():
-    df = pd.read_csv("/mnt/data/labeled_lyrics_cleaned.csv")
+    df = pd.read_csv("labeled_lyrics_cleaned.csv")
     return df
 
 df = load_data()
