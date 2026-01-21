@@ -30,7 +30,7 @@ stop_words = set(stopwords.words('english'))
 # =========================================
 # FILE UPLOAD
 # =========================================
-st.sidebar.header("📂 Upload Dataset")
+st.sidebar.header("Upload Dataset")
 uploaded_file = st.sidebar.file_uploader(
     "Upload a CSV file containing song lyrics",
     type=["csv"]
@@ -52,7 +52,7 @@ df = load_data(uploaded_file)
 # =========================================
 # COLUMN SELECTION
 # =========================================
-st.sidebar.subheader("⚙️ Dataset Settings")
+st.sidebar.subheader("Dataset Settings")
 
 text_column = st.sidebar.selectbox(
     "Select lyrics text column",
@@ -109,7 +109,7 @@ def get_emotions(text):
 # =========================================
 # ANALYZE BUTTON
 # =========================================
-if st.button("🔍 Analyze Lyrics Dataset"):
+if st.button("Analyze Lyrics Dataset"):
     with st.spinner("Analyzing lyrics using Transformer models..."):
         df[['sentiment', 'sentiment_confidence']] = df['clean_lyrics'].apply(
             lambda x: pd.Series(get_sentiment(x))
@@ -123,7 +123,7 @@ if st.button("🔍 Analyze Lyrics Dataset"):
     # =====================================
     # SENTIMENT DISTRIBUTION
     # =====================================
-    st.subheader("📊 Sentiment Polarity Distribution")
+    st.subheader("Sentiment Polarity Distribution")
 
     sentiment_counts = df_final['sentiment'].value_counts().reset_index()
     sentiment_counts.columns = ['Sentiment', 'Count']
@@ -138,7 +138,7 @@ if st.button("🔍 Analyze Lyrics Dataset"):
     # =====================================
     # EMOTION ANALYSIS
     # =====================================
-    st.subheader("🎭 Emotion Analysis")
+    st.subheader("Emotion Analysis")
 
     emotion_columns = emotion_df.columns
     emotion_avg = df_final[emotion_columns].mean().reset_index()
@@ -154,10 +154,10 @@ if st.button("🔍 Analyze Lyrics Dataset"):
     # =====================================
     # SAMPLE RESULTS TABLE
     # =====================================
-    st.subheader("📝 Sample Lyrics Analysis")
+    st.subheader("Sample Lyrics Analysis")
     st.dataframe(
         df_final[[text_column, 'sentiment', 'sentiment_confidence']]
-        .head(10),
+        .head(50),
         use_container_width=True
     )
 
@@ -165,7 +165,7 @@ if st.button("🔍 Analyze Lyrics Dataset"):
 # SINGLE LYRIC TESTING
 # =========================================
 st.markdown("---")
-st.subheader("🎧 Test Custom Lyrics")
+st.subheader("Test Custom Lyrics")
 
 user_input = st.text_area(
     "Enter song lyrics:",
