@@ -5,7 +5,6 @@
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import re
 import nltk
 from nltk.corpus import stopwords
@@ -29,18 +28,36 @@ nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
 
 # =========================================
+# FILE UPLOAD
+# =========================================
+st.sidebar.header("📂 Upload Dataset")
+uploaded_file = st.sidebar.file_uploader(
+    "Upload a CSV file containing song lyrics",
+    type=["csv"]
+)
+
+if uploaded_file is None:
+    st.info("Please upload a CSV file to begin analysis.")
+    st.stop()
+
+# =========================================
 # LOAD DATASET
 # =========================================
 @st.cache_data
-def load_data():
-    df = pd.read_csv("labeled_lyrics_cleaned.csv")
-    return df
+def load_data(file):
+    return pd.read_csv(file)
 
-df = load_data()
+df = load_data(uploaded_file)
 
-if 'lyrics' not in df.columns:
-    st.error("Dataset must contain a 'lyrics' column")
-    st.stop()
+# =========================================
+# COLUMN SELECTION
+# =========================================
+st.sidebar.subheader("⚙️ Dataset Settings")
+
+text_column = st.sidebar.selectbox(
+    "Select lyrics text column",
+    df.columns
+)
 
 # =========================================
 # TEXT PREPROCESSING
@@ -52,7 +69,7 @@ def clean_text(text):
     text = " ".join(word for word in text.split() if word not in stop_words)
     return text
 
-df['clean_lyrics'] = df['lyrics'].apply(clean_text)
+df['clean_lyrics'] = df[text_column].apply(clean_text)
 
 # =========================================
 # LOAD MODELS (CACHED)
@@ -139,7 +156,7 @@ if st.button("🔍 Analyze Lyrics Dataset"):
     # =====================================
     st.subheader("📝 Sample Lyrics Analysis")
     st.dataframe(
-        df_final[['lyrics', 'sentiment', 'sentiment_confidence']]
+        df_final[[text_column, 'sentiment', 'sentiment_confidence']]
         .head(10),
         use_container_width=True
     )
@@ -156,7 +173,7 @@ user_input = st.text_area(
 )
 
 if st.button("Analyze Lyrics"):
-    if user_input.strip() != "":
+    if user_input.strip():
         sentiment, confidence = get_sentiment(user_input)
         emotions = get_emotions(user_input)
 
