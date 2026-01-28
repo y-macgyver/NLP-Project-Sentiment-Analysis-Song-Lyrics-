@@ -70,6 +70,8 @@ def clean_text(text):
     return text
 
 df['clean_lyrics'] = df[text_column].apply(clean_text)
+df = df[df['clean_lyrics'].str.strip() != ""]
+
 
 # =========================================
 # LOAD MODELS (CACHED)
@@ -103,8 +105,15 @@ def get_sentiment(text):
 # EMOTION PREDICTION
 # =========================================
 def get_emotions(text):
-    emotions = emotion_model(text[:512])[0]
-    return {e['label']: e['score'] for e in emotions}
+    if not isinstance(text, str) or text.strip() == "":
+        return {}
+
+    try:
+        emotions = emotion_model(text[:512])[0]
+        return {e['label']: e['score'] for e in emotions}
+    except Exception as e:
+        return {}
+
 
 # =========================================
 # ANALYZE BUTTON
@@ -115,7 +124,11 @@ if st.button("Analyze Lyrics Dataset"):
             lambda x: pd.Series(get_sentiment(x))
         )
 
-        emotion_df = df['clean_lyrics'].apply(get_emotions).apply(pd.Series)
+        emotion_results = df['clean_lyrics'].apply(get_emotions)
+
+        emotion_df = pd.json_normalize(emotion_results)
+        emotion_df = emotion_df.fillna(0)
+
         df_final = pd.concat([df, emotion_df], axis=1)
 
     st.success("Analysis completed!")
