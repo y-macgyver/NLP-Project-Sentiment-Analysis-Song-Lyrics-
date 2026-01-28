@@ -10,8 +10,6 @@ import nltk
 from nltk.corpus import stopwords
 from transformers import pipeline
 import plotly.express as px
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
 
 # =========================================
 # PAGE CONFIG
@@ -161,32 +159,23 @@ if st.button("Analyze Lyrics Dataset"):
     )
     st.plotly_chart(fig_sentiment, use_container_width=True)
 
+    # =====================================
+    # EMOTION ANALYSIS (FIXED)
+    # =====================================
+    st.subheader("Emotion Analysis (Average Scores)")
 
-    # =====================================
-    # EMOTION ANALYSIS (Word Cloud)
-    # =====================================
-    st.subheader("Emotion Analysis (Word Cloud)")
-    
     emotion_columns = emotion_df.columns.tolist()
-    emotion_avg = df_final[emotion_columns].mean()
-    
-    # Convert to dict for word cloud
-    emotion_dict = emotion_avg.to_dict()
-    
-    # Generate word cloud
-    wordcloud = WordCloud(
-        background_color="white",
-        colormap="coolwarm",
-        width=800,
-        height=400
-    ).generate_from_frequencies(emotions)
-    
-    # Display with matplotlib and streamlit
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.imshow(wordcloud, interpolation="bilinear")
-    ax.axis("off")
-    st.pyplot(fig)
+    emotion_avg = df_final[emotion_columns].mean().reset_index()
+    emotion_avg.columns = ["Emotion", "Score"]
 
+    fig_emotion = px.bar(
+        emotion_avg,
+        x="Emotion",
+        y="Score",
+        range_y=[0, 1],
+        title="Emotion Analysis (Average Scores)"
+    )
+    st.plotly_chart(fig_emotion, use_container_width=True)
 
     # =====================================
     # SAMPLE TABLE
@@ -222,17 +211,13 @@ if st.button("Analyze Lyrics"):
             columns=["Emotion", "Score"]
         )
 
-        wordcloud = WordCloud(
-            background_color="white",
-            colormap="coolwarm",
-            width=800,
-            height=400
-        ).generate_from_frequencies(emotions)
-        
-        # Display with matplotlib and streamlit
-        fig, ax = plt.subplots(figsize=(10, 5))
-        ax.imshow(wordcloud, interpolation="bilinear")
-        ax.axis("off")
-        st.pyplot(fig)
+        fig_user_emotion = px.bar(
+            emotion_df_user,
+            x="Emotion",
+            y="Score",
+            range_y=[0, 1],
+            title="Emotion Breakdown"
+        )
+        st.plotly_chart(fig_user_emotion, use_container_width=True)
     else:
         st.warning("Please enter some lyrics.")
