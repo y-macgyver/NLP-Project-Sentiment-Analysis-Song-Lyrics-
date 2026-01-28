@@ -74,7 +74,7 @@ def load_emotion():
 sentiment_model = load_sentiment()
 emotion_model = load_emotion()
 
-emotion_labels = ["anger", "disgust", "fear", "joy", "sadness", "surprise", "neutral"]
+emotion_labels = ["angery", "disgusting", "scare", "happy", "sad", "surprise", "neutral"]
 
 # =========================================
 # FUNCTIONS
