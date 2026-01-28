@@ -108,28 +108,22 @@ def get_sentiment(text):
         return "NEUTRAL", 0.0
 
 # =========================================
-# EMOTION FUNCTION (ULTRA SAFE)
+# EMOTION FUNCTION (ROBUST)
 # =========================================
 def get_emotions(text):
     labels = ["anger", "disgust", "fear", "joy", "sadness", "surprise", "neutral"]
-    default_emotion = dict.fromkeys(labels, 0.0)
+    default = dict.fromkeys(labels, 0.0)
 
     if not isinstance(text, str) or len(text.strip()) < 20:
-        return default_emotion
+        return default
 
     try:
         output = emotion_model(text[:512])
-
-        if not output or not isinstance(output, list):
-            return default_emotion
-
-        if not output[0]:
-            return default_emotion
-
+        if not output or not output[0]:
+            return default
         return {e["label"]: float(e["score"]) for e in output[0]}
-
     except Exception:
-        return default_emotion
+        return default
 
 # =========================================
 # ANALYZE BUTTON
@@ -166,7 +160,7 @@ if st.button("Analyze Lyrics Dataset"):
     st.plotly_chart(fig_sentiment, use_container_width=True)
 
     # =====================================
-    # EMOTION ANALYSIS
+    # EMOTION ANALYSIS (FIXED)
     # =====================================
     st.subheader("Emotion Analysis (Average Scores)")
 
@@ -221,6 +215,7 @@ if st.button("Analyze Lyrics"):
             emotion_df_user,
             x="Emotion",
             y="Score",
+            range_y=[0, 1],
             title="Emotion Breakdown"
         )
         st.plotly_chart(fig_user_emotion, use_container_width=True)
