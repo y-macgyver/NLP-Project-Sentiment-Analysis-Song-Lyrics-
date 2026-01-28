@@ -179,7 +179,7 @@ if st.button("Analyze Lyrics Dataset"):
         colormap="coolwarm",
         width=800,
         height=400
-    ).generate_from_frequencies(emotion_dict)
+    ).generate_from_frequencies(emotions)
     
     # Display with matplotlib and streamlit
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -227,7 +227,7 @@ if st.button("Analyze Lyrics"):
             colormap="coolwarm",
             width=800,
             height=400
-        ).generate_from_frequencies(emotion_dict)
+        ).generate_from_frequencies(emotions)
         
         # Display with matplotlib and streamlit
         fig, ax = plt.subplots(figsize=(10, 5))
