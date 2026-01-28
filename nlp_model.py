@@ -114,7 +114,7 @@ def get_emotions(text):
     labels = ["anger", "disgust", "fear", "joy", "sadness", "surprise", "neutral"]
     default_emotion = dict.fromkeys(labels, 0.0)
 
-    if not isinstance(text, str) or len(text.strip()) < 5:
+    if not isinstance(text, str) or len(text.strip()) < 20:
         return default_emotion
 
     try:
@@ -178,6 +178,8 @@ if st.button("Analyze Lyrics Dataset"):
         emotion_avg,
         x="Emotion",
         y="Score"
+        range_y=[0, 1],
+        title="Emotion Analysis (Average Scores)"
     )
     st.plotly_chart(fig_emotion, use_container_width=True)
 
