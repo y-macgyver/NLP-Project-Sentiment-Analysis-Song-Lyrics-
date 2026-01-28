@@ -5,3 +5,4 @@ plotly
 pandas
 nltk
 wordcloud
+matplotlib
