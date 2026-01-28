@@ -177,7 +177,7 @@ if st.button("Analyze Lyrics Dataset"):
     fig_emotion = px.bar(
         emotion_avg,
         x="Emotion",
-        y="Score"
+        y="Score",
         range_y=[0, 1],
         title="Emotion Analysis (Average Scores)"
     )
