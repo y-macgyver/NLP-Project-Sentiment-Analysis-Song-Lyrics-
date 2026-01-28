@@ -74,7 +74,7 @@ def load_emotion():
 sentiment_model = load_sentiment()
 emotion_model = load_emotion()
 
-emotion_labels = ["angery", "disgusting", "scare", "happy", "sad", "surprise", "neutral"]
+emotion_labels = ["anger", "disgust", "fear", "joy", "sadness", "surprise", "neutral"]
 
 # =========================================
 # FUNCTIONS
@@ -150,9 +150,16 @@ if st.button("Analyze Lyrics Dataset"):
         st.warning("Emotion model returned empty values.")
     else:
         st.plotly_chart(
-            px.pie(emotion_avg, names="Emotion", values="Score"),
+            px.bar(
+                emotion_avg,
+                x="Emotion",
+                y="Score",
+                title="Emotion Analysis (Average)",
+                range_y=[0, 1]
+            ),
             use_container_width=True
         )
+
 
     # =====================================
     # SAMPLE
@@ -186,7 +193,13 @@ if st.button("Analyze Lyrics"):
             st.warning("Emotion model returned empty values.")
         else:
             st.plotly_chart(
-                px.pie(emo_df, names="Emotion", values="Score"),
+                px.bar(
+                    emo_df,
+                    x="Emotion",
+                    y="Score",
+                    title="Emotion Breakdown",
+                    range_y=[0, 1]
+                ),
                 use_container_width=True
             )
 
