@@ -70,7 +70,7 @@ def clean_text(text):
     return text
 
 # Keep BOTH versions (IMPORTANT)
-df['raw_lyrics'] = df[text_column].astype(str)
+df['lyrics'] = df[text_column].astype(str)
 df['clean_lyrics'] = df[text_column].apply(clean_text)
 
 # Remove empty rows
