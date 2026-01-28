@@ -69,7 +69,7 @@ def clean_text(text):
     text = " ".join(word for word in text.split() if word not in stop_words)
     return text
 
-df['clean_lyrics'] = df[text_column].apply(clean_text)
+df['lyrics'] = df[text_column].apply(clean_text)
 
 # =========================================
 # LOAD MODELS (CACHED)
@@ -111,11 +111,11 @@ def get_emotions(text):
 # =========================================
 if st.button("Analyze Lyrics Dataset"):
     with st.spinner("Analyzing lyrics using Transformer models..."):
-        df[['sentiment', 'sentiment_confidence']] = df['clean_lyrics'].apply(
+        df[['sentiment', 'sentiment_confidence']] = df['lyrics'].apply(
             lambda x: pd.Series(get_sentiment(x))
         )
 
-        emotion_df = df['clean_lyrics'].apply(get_emotions).apply(pd.Series)
+        emotion_df = df['lyrics'].apply(get_emotions).apply(pd.Series)
         df_final = pd.concat([df, emotion_df], axis=1)
 
     st.success("Analysis completed!")
