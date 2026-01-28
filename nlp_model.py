@@ -1,5 +1,5 @@
 # =========================================
-# STREAMLIT SENTIMENT & EMOTION DASHBOARD
+# STREAMLIT SENTIMENT ANALYSIS DASHBOARD
 # SONG LYRICS NLP PROJECT
 # =========================================
 
@@ -19,7 +19,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🎵 Song Lyrics Sentiment & Emotion Analysis Dashboard")
+st.title("🎵 Song Lyrics Sentiment Analysis Dashboard")
 
 # =========================================
 # NLTK SETUP
@@ -69,12 +69,7 @@ def clean_text(text):
     text = " ".join(word for word in text.split() if word not in stop_words)
     return text
 
-# Keep BOTH versions (IMPORTANT)
-df['lyrics'] = df[text_column].astype(str)
 df['clean_lyrics'] = df[text_column].apply(clean_text)
-
-# Remove empty rows
-df = df[df['clean_lyrics'].str.strip() != ""]
 
 # =========================================
 # LOAD MODELS (CACHED)
@@ -98,27 +93,16 @@ sentiment_model = load_sentiment_model()
 emotion_model = load_emotion_model()
 
 # =========================================
-# SENTIMENT FUNCTION
+# SENTIMENT PREDICTION
 # =========================================
 def get_sentiment(text):
     result = sentiment_model(text[:512])[0]
     return result['label'], result['score']
 
 # =========================================
-# EMOTION FUNCTION (SAFE)
+# EMOTION PREDICTION
 # =========================================
 def get_emotions(text):
-    if not isinstance(text, str) or len(text.strip()) < 10:
-        return {
-            "anger": 0,
-            "disgust": 0,
-            "fear": 0,
-            "joy": 0,
-            "sadness": 0,
-            "surprise": 0,
-            "neutral": 0
-        }
-
     emotions = emotion_model(text[:512])[0]
     return {e['label']: e['score'] for e in emotions}
 
@@ -127,16 +111,11 @@ def get_emotions(text):
 # =========================================
 if st.button("Analyze Lyrics Dataset"):
     with st.spinner("Analyzing lyrics using Transformer models..."):
-
-        # Sentiment
         df[['sentiment', 'sentiment_confidence']] = df['clean_lyrics'].apply(
             lambda x: pd.Series(get_sentiment(x))
         )
 
-        # Emotion (RAW lyrics)
-        emotion_results = df['lyrics'].apply(get_emotions)
-        emotion_df = pd.DataFrame(emotion_results.tolist())
-
+        emotion_df = df['clean_lyrics'].apply(get_emotions).apply(pd.Series)
         df_final = pd.concat([df, emotion_df], axis=1)
 
     st.success("Analysis completed!")
@@ -159,7 +138,7 @@ if st.button("Analyze Lyrics Dataset"):
     # =====================================
     # EMOTION ANALYSIS
     # =====================================
-    st.subheader("Emotion Analysis (Average Scores)")
+    st.subheader("Emotion Analysis")
 
     emotion_columns = emotion_df.columns
     emotion_avg = df_final[emotion_columns].mean().reset_index()
@@ -176,7 +155,6 @@ if st.button("Analyze Lyrics Dataset"):
     # SAMPLE RESULTS TABLE
     # =====================================
     st.subheader("Sample Lyrics Analysis")
-
     st.dataframe(
         df_final[[text_column, 'sentiment', 'sentiment_confidence']]
         .head(50),
@@ -196,7 +174,7 @@ user_input = st.text_area(
 
 if st.button("Analyze Lyrics"):
     if user_input.strip():
-        sentiment, confidence = get_sentiment(clean_text(user_input))
+        sentiment, confidence = get_sentiment(user_input)
         emotions = get_emotions(user_input)
 
         st.write(f"**Sentiment:** {sentiment}")
