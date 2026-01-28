@@ -24,8 +24,8 @@ st.title("🎵 Song Lyrics Sentiment & Emotion Analysis Dashboard")
 # =========================================
 # NLTK SETUP
 # =========================================
-nltk.download('stopwords')
-stop_words = set(stopwords.words('english'))
+nltk.download("stopwords")
+stop_words = set(stopwords.words("english"))
 
 # =========================================
 # FILE UPLOAD
@@ -66,18 +66,18 @@ def clean_text(text):
     text = str(text).lower()
     text = re.sub(r"http\S+|www\S+", "", text)
     text = re.sub(r"[^a-z\s]", "", text)
-    text = " ".join(word for word in text.split() if word not in stop_words)
+    text = " ".join(w for w in text.split() if w not in stop_words)
     return text
 
-# Keep BOTH versions (IMPORTANT)
-df['raw_lyrics'] = df[text_column].astype(str)
-df['clean_lyrics'] = df[text_column].apply(clean_text)
+# Keep RAW + CLEAN text
+df["raw_lyrics"] = df[text_column].astype(str)
+df["clean_lyrics"] = df[text_column].apply(clean_text)
 
 # Remove empty rows
-df = df[df['clean_lyrics'].str.strip() != ""]
+df = df[df["clean_lyrics"].str.strip() != ""]
 
 # =========================================
-# LOAD MODELS (CACHED)
+# LOAD MODELS
 # =========================================
 @st.cache_resource
 def load_sentiment_model():
@@ -101,26 +101,35 @@ emotion_model = load_emotion_model()
 # SENTIMENT FUNCTION
 # =========================================
 def get_sentiment(text):
-    result = sentiment_model(text[:512])[0]
-    return result['label'], result['score']
+    try:
+        result = sentiment_model(text[:512])[0]
+        return result["label"], float(result["score"])
+    except Exception:
+        return "NEUTRAL", 0.0
 
 # =========================================
-# EMOTION FUNCTION (SAFE)
+# EMOTION FUNCTION (ULTRA SAFE)
 # =========================================
 def get_emotions(text):
-    if not isinstance(text, str) or len(text.strip()) < 10:
-        return {
-            "anger": 0,
-            "disgust": 0,
-            "fear": 0,
-            "joy": 0,
-            "sadness": 0,
-            "surprise": 0,
-            "neutral": 0
-        }
+    labels = ["anger", "disgust", "fear", "joy", "sadness", "surprise", "neutral"]
+    default_emotion = dict.fromkeys(labels, 0.0)
 
-    emotions = emotion_model(text[:512])[0]
-    return {e['label']: e['score'] for e in emotions}
+    if not isinstance(text, str) or len(text.strip()) < 5:
+        return default_emotion
+
+    try:
+        output = emotion_model(text[:512])
+
+        if not output or not isinstance(output, list):
+            return default_emotion
+
+        if not output[0]:
+            return default_emotion
+
+        return {e["label"]: float(e["score"]) for e in output[0]}
+
+    except Exception:
+        return default_emotion
 
 # =========================================
 # ANALYZE BUTTON
@@ -129,13 +138,13 @@ if st.button("Analyze Lyrics Dataset"):
     with st.spinner("Analyzing lyrics using Transformer models..."):
 
         # Sentiment
-        df[['sentiment', 'sentiment_confidence']] = df['clean_lyrics'].apply(
+        df[["sentiment", "sentiment_confidence"]] = df["clean_lyrics"].apply(
             lambda x: pd.Series(get_sentiment(x))
         )
 
         # Emotion (RAW lyrics)
-        emotion_results = df['raw_lyrics'].apply(get_emotions)
-        emotion_df = pd.DataFrame(emotion_results.tolist())
+        emotion_results = df["raw_lyrics"].apply(get_emotions)
+        emotion_df = pd.DataFrame(list(emotion_results))
 
         df_final = pd.concat([df, emotion_df], axis=1)
 
@@ -146,13 +155,13 @@ if st.button("Analyze Lyrics Dataset"):
     # =====================================
     st.subheader("Sentiment Polarity Distribution")
 
-    sentiment_counts = df_final['sentiment'].value_counts().reset_index()
-    sentiment_counts.columns = ['Sentiment', 'Count']
+    sentiment_counts = df_final["sentiment"].value_counts().reset_index()
+    sentiment_counts.columns = ["Sentiment", "Count"]
 
     fig_sentiment = px.pie(
         sentiment_counts,
-        names='Sentiment',
-        values='Count'
+        names="Sentiment",
+        values="Count"
     )
     st.plotly_chart(fig_sentiment, use_container_width=True)
 
@@ -161,25 +170,24 @@ if st.button("Analyze Lyrics Dataset"):
     # =====================================
     st.subheader("Emotion Analysis (Average Scores)")
 
-    emotion_columns = emotion_df.columns
+    emotion_columns = emotion_df.columns.tolist()
     emotion_avg = df_final[emotion_columns].mean().reset_index()
-    emotion_avg.columns = ['Emotion', 'Score']
+    emotion_avg.columns = ["Emotion", "Score"]
 
     fig_emotion = px.bar(
         emotion_avg,
-        x='Emotion',
-        y='Score'
+        x="Emotion",
+        y="Score"
     )
     st.plotly_chart(fig_emotion, use_container_width=True)
 
     # =====================================
-    # SAMPLE RESULTS TABLE
+    # SAMPLE TABLE
     # =====================================
     st.subheader("Sample Lyrics Analysis")
 
     st.dataframe(
-        df_final[[text_column, 'sentiment', 'sentiment_confidence']]
-        .head(50),
+        df_final[[text_column, "sentiment", "sentiment_confidence"]].head(50),
         use_container_width=True
     )
 
@@ -204,16 +212,15 @@ if st.button("Analyze Lyrics"):
 
         emotion_df_user = pd.DataFrame(
             emotions.items(),
-            columns=['Emotion', 'Score']
+            columns=["Emotion", "Score"]
         )
 
         fig_user_emotion = px.bar(
             emotion_df_user,
-            x='Emotion',
-            y='Score',
+            x="Emotion",
+            y="Score",
             title="Emotion Breakdown"
         )
-
         st.plotly_chart(fig_user_emotion, use_container_width=True)
     else:
         st.warning("Please enter some lyrics.")
