@@ -168,13 +168,13 @@ if st.button("Analyze Lyrics Dataset"):
     emotion_avg = df_final[emotion_columns].mean().reset_index()
     emotion_avg.columns = ["Emotion", "Score"]
 
-    fig_emotion = px.bar(
+    fig_emotion = px.pie(
         emotion_avg,
-        x="Emotion",
-        y="Score",
-        range_y=[0, 1],
+        names="Emotion",
+        values="Score",
         title="Emotion Analysis (Average Scores)"
     )
+
     st.plotly_chart(fig_emotion, use_container_width=True)
 
     # =====================================
@@ -211,13 +211,13 @@ if st.button("Analyze Lyrics"):
             columns=["Emotion", "Score"]
         )
 
-        fig_user_emotion = px.bar(
+        fig_user_emotion = px.pie(
             emotion_df_user,
-            x="Emotion",
-            y="Score",
-            range_y=[0, 1],
+            names="Emotion",
+            values="Score",
             title="Emotion Breakdown"
         )
+
         st.plotly_chart(fig_user_emotion, use_container_width=True)
     else:
         st.warning("Please enter some lyrics.")
