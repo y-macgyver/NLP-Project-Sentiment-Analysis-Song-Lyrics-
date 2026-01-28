@@ -134,7 +134,7 @@ if st.button("Analyze Lyrics Dataset"):
         )
 
         # Emotion (RAW lyrics)
-        emotion_results = df['raw_lyrics'].apply(get_emotions)
+        emotion_results = df['lyrics'].apply(get_emotions)
         emotion_df = pd.DataFrame(emotion_results.tolist())
 
         df_final = pd.concat([df, emotion_df], axis=1)
