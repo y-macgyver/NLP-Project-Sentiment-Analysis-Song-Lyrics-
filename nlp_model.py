@@ -160,22 +160,36 @@ if st.button("Analyze Lyrics Dataset"):
     st.plotly_chart(fig_sentiment, use_container_width=True)
 
     # =====================================
-    # EMOTION ANALYSIS (FIXED)
+    # EMOTION ANALYSIS (PIE - FIXED)
     # =====================================
     st.subheader("Emotion Analysis (Average Scores)")
-
-    emotion_columns = emotion_df.columns.tolist()
-    emotion_avg = df_final[emotion_columns].mean().reset_index()
+    
+    emotion_labels = ["anger", "disgust", "fear", "joy", "sadness", "surprise", "neutral"]
+    
+    # Ensure all emotion columns exist
+    for e in emotion_labels:
+        if e not in df_final.columns:
+            df_final[e] = 0.0
+    
+    # Fill NaNs
+    df_final[emotion_labels] = df_final[emotion_labels].fillna(0)
+    
+    emotion_avg = df_final[emotion_labels].mean().reset_index()
     emotion_avg.columns = ["Emotion", "Score"]
+    
+    # Prevent empty pie
+    if emotion_avg["Score"].sum() == 0:
+        st.warning("No emotion data detected.")
+    else:
+        fig_emotion = px.pie(
+            emotion_avg,
+            names="Emotion",
+            values="Score",
+            title="Emotion Analysis (Average Scores)"
+        )
+    
+        st.plotly_chart(fig_emotion, use_container_width=True)
 
-    fig_emotion = px.pie(
-        emotion_avg,
-        names="Emotion",
-        values="Score",
-        title="Emotion Analysis (Average Scores)"
-    )
-
-    st.plotly_chart(fig_emotion, use_container_width=True)
 
     # =====================================
     # SAMPLE TABLE
@@ -206,18 +220,22 @@ if st.button("Analyze Lyrics"):
         st.write(f"**Sentiment:** {sentiment}")
         st.write(f"**Confidence:** {confidence:.2f}")
 
-        emotion_df_user = pd.DataFrame(
-            emotions.items(),
-            columns=["Emotion", "Score"]
-        )
-
+    emotion_df_user = pd.DataFrame(
+        emotions.items(),
+        columns=["Emotion", "Score"]
+    ).fillna(0)
+    
+    if emotion_df_user["Score"].sum() == 0:
+        st.warning("Emotion model returned empty scores.")
+    else:
         fig_user_emotion = px.pie(
             emotion_df_user,
             names="Emotion",
             values="Score",
             title="Emotion Breakdown"
         )
-
+    
         st.plotly_chart(fig_user_emotion, use_container_width=True)
+
     else:
         st.warning("Please enter some lyrics.")
